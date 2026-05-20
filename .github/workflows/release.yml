@@ -55,7 +55,7 @@ jobs:
 
       - name: Create DMG
         run: |
-          APP="build/server/pocketmixer-server_artefacts/PocketMixer Server.app"
+          APP="build/server/pocketmixer-server_artefacts/Release/PocketMixer Server.app"
           STAGE=$(mktemp -d)
           cp -R "$APP" "$STAGE/"
           ln -s /Applications "$STAGE/Applications"
