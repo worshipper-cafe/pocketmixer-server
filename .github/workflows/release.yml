@@ -47,7 +47,7 @@ jobs:
         env:
           SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
         run: |
-          APP="build/server/pocketmixer-server_artefacts/PocketMixer Server.app"
+          APP="build/server/pocketmixer-server_artefacts/Release/PocketMixer Server.app"
           codesign --force --deep --options runtime \
             --entitlements scripts/server.entitlements \
             --sign "$SIGN_IDENTITY" "$APP"
