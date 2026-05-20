@@ -1,0 +1,86 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-macos:
+    name: macOS DMG
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          repository: atclate/open-p16
+          ref: main
+          submodules: recursive
+
+      - name: Install dependencies
+        run: brew install cmake ninja
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build server
+        run: cmake --build build --target pocketmixer-server
+
+      - name: Import signing certificate
+        env:
+          CERT_P12_BASE64: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+          CERT_PASSWORD:   ${{ secrets.APPLE_CERT_PASSWORD }}
+        run: |
+          echo "$CERT_P12_BASE64" | base64 --decode > /tmp/cert.p12
+          security create-keychain -p ci build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p ci build.keychain
+          security import /tmp/cert.p12 -k build.keychain \
+            -P "$CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list \
+            -S apple-tool:,apple: -s -k ci build.keychain
+          rm /tmp/cert.p12
+
+      - name: Sign app bundle
+        env:
+          SIGN_IDENTITY: ${{ secrets.APPLE_SIGN_IDENTITY }}
+        run: |
+          APP="build/server/pocketmixer-server_artefacts/PocketMixer Server.app"
+          codesign --force --deep --options runtime \
+            --entitlements scripts/server.entitlements \
+            --sign "$SIGN_IDENTITY" "$APP"
+          codesign --verify --deep --strict "$APP"
+
+      - name: Create DMG
+        run: |
+          APP="build/server/pocketmixer-server_artefacts/PocketMixer Server.app"
+          STAGE=$(mktemp -d)
+          cp -R "$APP" "$STAGE/"
+          ln -s /Applications "$STAGE/Applications"
+          hdiutil create \
+            -volname "PocketMixer Server" \
+            -srcfolder "$STAGE" \
+            -ov -format UDZO \
+            PocketMixerServer.dmg
+          rm -rf "$STAGE"
+          codesign --force \
+            --sign "${{ secrets.APPLE_SIGN_IDENTITY }}" \
+            PocketMixerServer.dmg
+
+      - name: Notarize DMG
+        run: |
+          xcrun notarytool submit PocketMixerServer.dmg \
+            --apple-id    "${{ secrets.APPLE_ID }}" \
+            --team-id     "${{ secrets.APPLE_TEAM_ID }}" \
+            --password    "${{ secrets.APPLE_APP_PASSWORD }}" \
+            --wait
+
+      - name: Staple
+        run: xcrun stapler staple PocketMixerServer.dmg
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: PocketMixerServer.dmg
+          generate_release_notes: true

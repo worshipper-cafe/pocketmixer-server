@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketMixer Server</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --border:    #2a2d3a;
+      --accent:    #1d4ed8;
+      --accent-h:  #2563eb;
+      --text:      #e8eaf0;
+      --muted:     #8b90a0;
+      --green:     #22c55e;
+      --yellow:    #eab308;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      height: 60px;
+    }
+    header img { width: 32px; height: 32px; border-radius: 6px; }
+    header .brand { font-weight: 700; font-size: 1.1rem; }
+    header nav { margin-left: auto; display: flex; gap: 1.5rem; }
+    header nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; }
+    header nav a:hover { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero .badge {
+      display: inline-block;
+      background: color-mix(in srgb, var(--accent) 20%, transparent);
+      color: #93c5fd;
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      border-radius: 99px;
+      padding: 0.25rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 span { color: #60a5fa; }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── Download buttons ── */
+    .downloads {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.8rem 1.6rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    .version-line {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .version-line a { color: var(--muted); }
+    .version-line a:hover { color: var(--text); }
+
+    /* ── Features ── */
+    .features {
+      max-width: 900px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+    .features h2 {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 2.5rem;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .feature-card .icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.75rem;
+    }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .feature-card p  { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Requirements ── */
+    .requirements {
+      max-width: 600px;
+      margin: 0 auto 5rem;
+      padding: 0 2rem;
+      text-align: center;
+    }
+    .requirements h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.25rem; }
+    .req-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      text-align: left;
+    }
+    .req-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .req-card h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.6rem;
+    }
+    .req-card ul { list-style: none; }
+    .req-card li {
+      font-size: 0.88rem;
+      color: var(--text);
+      padding: 0.2rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .req-card li::before { content: "·"; color: var(--accent); font-weight: 900; }
+    .coming-soon {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: color-mix(in srgb, var(--yellow) 15%, transparent);
+      color: var(--yellow);
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      vertical-align: middle;
+      margin-left: 0.3rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="icon_server.png" alt="PocketMixer Server icon" />
+  <span class="brand">PocketMixer</span>
+  <nav>
+    <a href="https://github.com/worshipper-cafe/pocketmixer-server/releases">Releases</a>
+    <a href="https://github.com/worshipper-cafe/pocketmixer-server">Source</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="badge">Free &amp; Open Source</div>
+  <h1>Personal monitor mixing<br/>for <span>worship teams</span></h1>
+  <p>
+    PocketMixer Server runs on your sound booth Mac and gives every musician
+    on stage independent control of their own in-ear monitor mix — wirelessly,
+    in real time.
+  </p>
+
+  <div class="downloads">
+    <a id="btn-mac" class="btn btn-primary" href="#">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+      </svg>
+      Download for macOS
+    </a>
+    <span class="btn btn-secondary">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M3 5.557L10.025 4.5l.003 6.825-7.022.042L3 5.557zm7.025 6.712l.004 6.836L3.002 18l-.001-5.764 7.024.033zm.881-7.803L20.998 3v8.248l-10.092.08V4.466zm10.094 8.123-.006 8.188-10.092-1.424-.014-6.783 10.112.019z"/>
+      </svg>
+      Windows <span class="coming-soon">Coming soon</span>
+    </span>
+  </div>
+
+  <p class="version-line">
+    <span id="version-text">Loading latest version...</span>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/worshipper-cafe/pocketmixer-server/releases">All releases</a>
+  </p>
+</section>
+
+<section class="features">
+  <h2>Everything your team needs</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">🎚️</div>
+      <h3>Per-musician mixes</h3>
+      <p>Each person on stage gets their own independent stereo mix. Turn up your vocals, dial back the drums — without touching the FOH.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">📡</div>
+      <h3>Wireless control</h3>
+      <p>Musicians use the free PocketMixer app on their phone or tablet to control their mix in real time over your existing Wi-Fi.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🎛️</div>
+      <h3>Up to 32 channels</h3>
+      <p>Connect any USB multi-channel audio interface. Supports stereo-linked channel pairs for keyboards and backing tracks.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">⚡</div>
+      <h3>Low latency</h3>
+      <p>RTP unicast audio streams directly to each in-ear receiver. Configurable jitter buffer from 0 ms (zero-jitter mode) up to 200 ms.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🎭</div>
+      <h3>Scene save &amp; recall</h3>
+      <p>Save complete snapshots of every musician's mix. Recall them instantly for different setlists or services.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">🔒</div>
+      <h3>Password protected</h3>
+      <p>Optional password keeps the mix locked to your team. No stranger can join your network and mess with the levels.</p>
+    </div>
+  </div>
+</section>
+
+<section class="requirements">
+  <h2>System requirements</h2>
+  <div class="req-grid">
+    <div class="req-card">
+      <h4>macOS Server</h4>
+      <ul>
+        <li>macOS 12 Monterey or later</li>
+        <li>Apple Silicon or Intel</li>
+        <li>USB multi-channel audio interface</li>
+        <li>802.11ac Wi-Fi or better</li>
+      </ul>
+    </div>
+    <div class="req-card">
+      <h4>Windows Server <span class="coming-soon">Soon</span></h4>
+      <ul>
+        <li>Windows 10 / 11 (64-bit)</li>
+        <li>ASIO audio interface</li>
+        <li>802.11ac Wi-Fi or better</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  PocketMixer is open source and free to use. &nbsp;·&nbsp;
+  <a href="https://github.com/worshipper-cafe/pocketmixer-server">GitHub</a> &nbsp;·&nbsp;
+  <a href="https://sites.google.com/d/1kvLb1YHf_GrzeXgQ4-KkNSXkfZebPkM5/p/1oCMQSr-kXhlKerbChGWi1fYGlrGCGHti/edit">Privacy Policy</a>
+</footer>
+
+<script>
+  const REPO = "worshipper-cafe/pocketmixer-server";
+
+  fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
+    .then(r => r.json())
+    .then(data => {
+      const tag = data.tag_name || "";
+      const assets = data.assets || [];
+      const dmg = assets.find(a => a.name.endsWith(".dmg"));
+
+      document.getElementById("version-text").textContent =
+        tag ? `Latest: ${tag}` : "No releases yet";
+
+      const btn = document.getElementById("btn-mac");
+      if (dmg) {
+        btn.href = dmg.browser_download_url;
+      } else {
+        btn.href = `https://github.com/${REPO}/releases`;
+      }
+    })
+    .catch(() => {
+      document.getElementById("version-text").textContent = "See releases on GitHub";
+      document.getElementById("btn-mac").href =
+        `https://github.com/${REPO}/releases`;
+    });
+</script>
+
+</body>
+</html>
