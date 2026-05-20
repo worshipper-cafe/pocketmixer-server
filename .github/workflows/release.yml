@@ -17,6 +17,7 @@ jobs:
           repository: atclate/open-p16
           ref: main
           submodules: recursive
+          token: ${{ secrets.ATCLATE_READ_TOKEN }}
 
       - name: Install dependencies
         run: brew install cmake ninja
